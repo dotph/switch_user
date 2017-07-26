@@ -6,7 +6,7 @@ module SwitchUserHelper
     selected_user = nil
 
     grouped_options_container = {}.tap do |h|
-      SwitchUser.all_users.each do |record|
+      self.all_users.each do |record|
         scope = record.is_a?(SwitchUser::GuestRecord) ? :Guest : record.scope.to_s.capitalize
         h[scope] ||= []
         h[scope] << [record.label, record.scope_id]
@@ -32,6 +32,12 @@ module SwitchUserHelper
   end
 
   private
+  
+  def all_users
+    Rails.cache.fetch("all_users", expires_in: 1.hour) do
+      SwitchUser.all_users
+    end
+  end
 
   def user_tag_value(user, id_name, scope)
     identifier = user.send(id_name)
